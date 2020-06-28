@@ -16,7 +16,7 @@ let package = Package(
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
-        .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "1.7.4"),
+        .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "2.0.0"),
         .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0")
     ],
     targets: [

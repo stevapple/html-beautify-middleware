@@ -23,7 +23,11 @@ public final class HtmlBeautifyMiddleware: Middleware {
                     let html = try SwiftSoup.parse(response.body.string!)
                     html.outputSettings().indentAmount(indentAmount: self.indent).outline(outlineMode: false)
                     response.body = .init(string: try html.outerHtml())
-                } catch {}
+                } catch Exception.Error(_, let message) {
+                    request.logger.error("Parse HTML response failed: \(message)")
+                } catch {
+                    request.logger.error("Parse HTML response failed")
+                }
             }
             return response
         }
