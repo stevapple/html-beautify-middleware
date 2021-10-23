@@ -1,13 +1,12 @@
+@testable import HtmlBeautifyMiddleware
 import XCTest
 import XCTVapor
-@testable import HtmlBeautifyMiddleware
 
 final class HtmlBeautifyMiddlewareTests: XCTestCase {
-    
-    let renderer: (Request) -> View = { (req: Request) -> View in
-        
+    let renderer: (Request) -> View = { (_: Request) -> View in
+
         var result = ByteBufferAllocator().buffer(capacity: 0)
-        
+
         result.writeString("""
         <!doctype html>
         <html> <head> <title> 1111 </title> <body>
@@ -18,20 +17,19 @@ final class HtmlBeautifyMiddlewareTests: XCTestCase {
 
         return View(data: result)
     }
-    
-    func testBeautifier() throws {
 
-        let app: Application = Application(.testing)
+    func testBeautifier() throws {
+        let app = Application(.testing)
         defer { app.shutdown() }
-        
+
         app.grouped(
             HtmlBeautifyMiddleware()
-        ).get("test1", use: renderer)
-        
+        ).get("test1", use: self.renderer)
+
         app.grouped(
             HtmlBeautifyMiddleware(indent: 0)
-        ).get("test2", use: renderer)
-        
+        ).get("test2", use: self.renderer)
+
         try app.testable().test(.GET, "/test1") { res in
             XCTAssertEqual(res.status, .ok)
             XCTAssertEqual(res.body.string.splitTrimmed, """
@@ -46,7 +44,7 @@ final class HtmlBeautifyMiddlewareTests: XCTestCase {
             </html>
             """.splitTrimmed)
         }
-        
+
         try app.testable().test(.GET, "/test2") { res in
             XCTAssertEqual(res.status, .ok)
             XCTAssertEqual(res.body.string.splitTrimmed, """
@@ -70,12 +68,12 @@ final class HtmlBeautifyMiddlewareTests: XCTestCase {
 
     static var allTests = [
         ("testBeautifier", testBeautifier),
-        ("testContentType", testContentType)
+        ("testContentType", testContentType),
     ]
 }
 
-fileprivate extension String {
-    var splitTrimmed: [String] {
+extension String {
+    fileprivate var splitTrimmed: [String] {
         self.split(separator: "\n").map {
             String(
                 ("/" + $0).trimmingCharacters(in: .whitespacesAndNewlines).dropFirst()
