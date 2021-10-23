@@ -1,24 +1,45 @@
 name: Test
-on:
-- push
+
+on: [push]
+
 jobs:
-  test_xenial:
-    container: 
-      image: vapor/swift:5.2-xenial
+  test-linux:
+    name: Test on Linux
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        swift:
+          - 5.4.3
+          - 5.5
+    container:
+      image: swift:${{ matrix.swift }}
     steps:
-    - uses: actions/checkout@v1
-    - run: swift test --enable-test-discovery
-  test_bionic:
-    container: 
-      image: vapor/swift:5.2-bionic
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v1
-    - run: swift test --enable-test-discovery
-  test_macos:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Test
+        run: swift test
+
+  test-macos:
+    name: Test on macOS
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v1
-    - run: sudo xcode-select -s /Applications/Xcode_11.4.app/Contents/Developer
-    - run: swift test --enable-test-discovery
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Test
+        run: swift test
+
+  test-legacy:
+    name: Test for Swift (Legacy)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        swift:
+          - 5.2.5
+          - 5.3.3
+    container:
+      image: swift:${{ matrix.swift }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Test
+        run: swift test --enable-test-discovery
