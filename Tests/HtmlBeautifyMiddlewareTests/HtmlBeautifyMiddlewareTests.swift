@@ -3,8 +3,7 @@ import XCTest
 import XCTVapor
 
 final class HtmlBeautifyMiddlewareTests: XCTestCase {
-    let renderer: (Request) -> View = { (_: Request) -> View in
-
+    let renderer: (Request) -> View = { _ in
         var result = ByteBufferAllocator().buffer(capacity: 0)
 
         result.writeString("""
@@ -18,19 +17,15 @@ final class HtmlBeautifyMiddlewareTests: XCTestCase {
         return View(data: result)
     }
 
-    func testBeautifier() throws {
+    func testDefaultBeautifier() throws {
         let app = Application(.testing)
         defer { app.shutdown() }
 
-        app.grouped(
-            HtmlBeautifyMiddleware()
-        ).get("test1", use: self.renderer)
+        app.middleware.use(HtmlBeautifyMiddleware())
 
-        app.grouped(
-            HtmlBeautifyMiddleware(indent: 0)
-        ).get("test2", use: self.renderer)
+        app.get("test", use: self.renderer)
 
-        try app.testable().test(.GET, "/test1") { res in
+        try app.testable().test(.GET, "/test") { res in
             XCTAssertEqual(res.status, .ok)
             XCTAssertEqual(res.body.string.splitTrimmed, """
             <!doctype html>
@@ -44,6 +39,34 @@ final class HtmlBeautifyMiddlewareTests: XCTestCase {
             </html>
             """.splitTrimmed)
         }
+    }
+
+    func testCustomBeautifier() throws {
+        let app = Application(.testing)
+        defer { app.shutdown() }
+
+        app.grouped(
+            HtmlBeautifyMiddleware(indent: 4)
+        ).get("test1", use: self.renderer)
+
+        try app.testable().test(.GET, "/test1") { res in
+            XCTAssertEqual(res.status, .ok)
+            XCTAssertEqual(res.body.string.splitTrimmed, """
+            <!doctype html>
+            <html>
+                <head>
+                    <title> 1111 </title>
+                </head>
+                <body>
+                    <h1> 11 </h1> 12
+                </body>
+            </html>
+            """.splitTrimmed)
+        }
+
+        app.grouped(
+            HtmlBeautifyMiddleware(indent: 0)
+        ).get("test2", use: self.renderer)
 
         try app.testable().test(.GET, "/test2") { res in
             XCTAssertEqual(res.status, .ok)
@@ -61,14 +84,15 @@ final class HtmlBeautifyMiddlewareTests: XCTestCase {
         }
     }
 
-    func testContentType() throws {
-        XCTAssertEqual("text/html", HtmlBeautifyMiddleware.ContentType.html)
-        XCTAssertEqual("application/leaf", HtmlBeautifyMiddleware.ContentType.custom(type: "application/leaf"))
+    func testMediaType() throws {
+        XCTAssertEqual("text/html", HtmlBeautifyMiddleware.MediaType.html.rawValue)
+        XCTAssertEqual("application/leaf", HtmlBeautifyMiddleware.MediaType.application("leaf").rawValue)
     }
 
     static var allTests = [
-        ("testBeautifier", testBeautifier),
-        ("testContentType", testContentType),
+        ("testDefaultBeautifier", testDefaultBeautifier),
+        ("testCustomBeautifier", testCustomBeautifier),
+        ("testMediaType", testMediaType),
     ]
 }
 

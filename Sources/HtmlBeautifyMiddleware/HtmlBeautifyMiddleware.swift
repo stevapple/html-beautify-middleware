@@ -1,26 +1,25 @@
 import SwiftSoup
 import Vapor
 
-public final class HtmlBeautifyMiddleware: Middleware {
-    private let indent: UInt
-    private let types: [ContentType]
+public struct HtmlBeautifyMiddleware: Middleware {
+    public let indent: UInt
+    public let mediaTypes: [MediaType]
 
-    public init(indent: UInt = 2, accept types: [ContentType] = [.html]) {
+    public init(indent: UInt = 2, accept types: [MediaType] = [.html]) {
         self.indent = indent
-        self.types = types
+        self.mediaTypes = types
     }
 
     public func respond(to request: Request, chainingTo next: Responder) -> EventLoopFuture<Response> {
         next.respond(to: request).map { response in
-            guard let contentType = response.headers.contentType else {
+            guard let contentType = response.headers.contentType?.serialize(),
+                  let responseBody = response.body.string
+            else {
                 return response
             }
-            let filter = self.types.reduce(false) { state, type in
-                contentType.description.hasPrefix(type.description) ? true : state
-            }
-            if filter {
+            if self.mediaTypes.map(\.rawValue).map(contentType.hasPrefix).contains(true) {
                 do {
-                    let html = try SwiftSoup.parse(response.body.string!)
+                    let html = try SwiftSoup.parse(responseBody)
                     html.outputSettings().indentAmount(indentAmount: self.indent).outline(outlineMode: false)
                     response.body = .init(string: try html.outerHtml())
                 } catch Exception.Error(_, let message) {
@@ -33,31 +32,32 @@ public final class HtmlBeautifyMiddleware: Middleware {
         }
     }
 
-    public enum ContentType: CustomStringConvertible, Equatable, ExpressibleByStringLiteral {
-        case html
-        case text
-        case custom(type: String)
+    public struct MediaType: RawRepresentable, ExpressibleByStringLiteral, CustomStringConvertible {
+        public let rawValue: String
 
-        public var description: String {
-            switch self {
-            case .html:
-                return "text/html"
-            case .text:
-                return "text/plain"
-            case .custom(let type):
-                return type
-            }
+        public init(rawValue: String) {
+            self.rawValue = rawValue
         }
 
         public init(stringLiteral value: String) {
-            switch value {
-            case "text/html":
-                self = .html
-            case "text/plain":
-                self = .text
-            default:
-                self = .custom(type: value)
-            }
+            self.init(rawValue: value)
         }
+
+        public var description: String {
+            self.rawValue
+        }
+    }
+}
+
+extension HtmlBeautifyMiddleware.MediaType {
+    public static let html = Self(rawValue: "text/html")
+    public static let xml = Self(rawValue: "application/xml")
+
+    public static func application(_ type: String) -> Self {
+        Self(rawValue: "application/\(type)")
+    }
+
+    public static func text(_ type: String) -> Self {
+        Self(rawValue: "text/\(type)")
     }
 }
