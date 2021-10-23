@@ -8,9 +8,23 @@
 
 `HtmlBeautifyMiddleware` is a [Vapor 4](https://github.com/vapor/vapor) middleware which can beautify all the HTML files served by Vapor.
 
-You can use it with [Leaf](https://github.com/vapor/leaf), the templating language for Swift and Vapor.
+You can use it with [Leaf](https://github.com/vapor/leaf), the template language for Swift and Vapor.
 
-## Usage
+## Add to your project
+
+Add `HtmlBeautifyMiddleware` to your SwiftPM project by specifying the following package dependency in `Package.swift`:
+
+```swift
+.package(url: "https://github.com/stevapple/html-beautify-middleware", from: "1.0.0")
+```
+
+Then add the product in your target's dependencies:
+
+```swift
+.product(name: "HtmlBeautifyMiddleware", package: "html-beautify-middleware")
+```
+
+## Use with Vapor
 
 You can enable it globally by registering it to `app`:
 
