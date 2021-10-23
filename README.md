@@ -1,4 +1,4 @@
-# HtmlBeautifyMiddleware: Beautifies Your HTML Files
+# HtmlBeautifyMiddleware: Beautify your HTML files
 
 ![Vapor](https://img.shields.io/badge/Vapor-4-green.svg?logo=vapor)
 ![Swift](https://img.shields.io/badge/Swift->=5.2-orange.svg?logo=swift)
@@ -18,7 +18,7 @@ Add `HtmlBeautifyMiddleware` to your SwiftPM project by specifying the following
 .package(url: "https://github.com/stevapple/html-beautify-middleware", from: "1.0.0")
 ```
 
-Then add the product in your target's dependencies:
+Then add the product to your target's dependencies:
 
 ```swift
 .product(name: "HtmlBeautifyMiddleware", package: "html-beautify-middleware")
@@ -41,7 +41,7 @@ public func configure(_ app: Application) throws {
 }
 ```
 
-Alternatively, register it to specific routes with `app.grouped`:
+Alternatively, bind it to specific routes with `app.grouped`:
 
 ```swift
 // Sources/App/routes.swift
