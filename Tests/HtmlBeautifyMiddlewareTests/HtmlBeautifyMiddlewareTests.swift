@@ -1,4 +1,4 @@
-@testable import HtmlBeautifyMiddleware
+import HtmlBeautifyMiddleware
 import XCTest
 import XCTVapor
 
@@ -88,12 +88,6 @@ final class HtmlBeautifyMiddlewareTests: XCTestCase {
         XCTAssertEqual("text/html", HtmlBeautifyMiddleware.MediaType.html.rawValue)
         XCTAssertEqual("application/leaf", HtmlBeautifyMiddleware.MediaType.application("leaf").rawValue)
     }
-
-    static var allTests = [
-        ("testDefaultBeautifier", testDefaultBeautifier),
-        ("testCustomBeautifier", testCustomBeautifier),
-        ("testMediaType", testMediaType),
-    ]
 }
 
 extension String {
