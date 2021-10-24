@@ -17,6 +17,22 @@ final class HtmlBeautifyMiddlewareTests: XCTestCase {
         return View(data: result)
     }
 
+    let markdownRenderer: (Request) -> View = { _ in
+        var result = ByteBufferAllocator().buffer(capacity: 0)
+
+        result.writeString("""
+        # The Title
+
+        This is a Markdown file.
+
+        It may be mixed with some HTML.
+
+        <hr />
+        """)
+
+        return View(data: result)
+    }
+
     func testDefaultBeautifier() throws {
         let app = Application(.testing)
         defer { app.shutdown() }
@@ -80,6 +96,28 @@ final class HtmlBeautifyMiddlewareTests: XCTestCase {
             <h1> 11 </h1> 12
             </body>
             </html>
+            """.splitTrimmed)
+        }
+    }
+
+    func testNotHTML() throws {
+        let app = Application(.testing)
+        defer { app.shutdown() }
+
+        app.middleware.use(HtmlBeautifyMiddleware())
+
+        app.get("test", use: self.markdownRenderer)
+
+        try app.testable().test(.GET, "/test") { res in
+            XCTAssertEqual(res.status, .ok)
+            XCTAssertEqual(res.body.string.splitTrimmed, """
+            # The Title
+
+            This is a Markdown file.
+
+            It may be mixed with some HTML.
+
+            <hr />
             """.splitTrimmed)
         }
     }
