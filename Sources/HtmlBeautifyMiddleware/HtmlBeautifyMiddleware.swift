@@ -22,23 +22,24 @@ public struct HtmlBeautifyMiddleware: Middleware {
     public func respond(to request: Request, chainingTo next: Responder) -> EventLoopFuture<Response> {
         next.respond(to: request).map { response in
             guard let contentType = response.headers.contentType?.serialize(),
+                  self.mediaTypes.map(contentType.hasPrefix).contains(true),
                   let responseBody = response.body.string?.trimmingCharacters(in: .whitespacesAndNewlines),
                   responseBody.lowercased().starts(with: "<!doctype html")
             else {
                 return response
             }
-            if self.mediaTypes.map(contentType.hasPrefix).contains(true) {
-                do {
-                    request.logger.info("Try to beautify HTML reponse")
-                    let html = try SwiftSoup.parse(responseBody)
-                    html.outputSettings().indentAmount(indentAmount: self.indent).outline(outlineMode: false)
-                    response.body = .init(string: try html.outerHtml())
-                } catch Exception.Error(_, let message) {
-                    request.logger.warning("Parse HTML response failed: \(message)")
-                } catch {
-                    request.logger.warning("Parse HTML response failed")
-                }
+
+            do {
+                request.logger.info("Try to beautify HTML reponse")
+                let html = try SwiftSoup.parse(responseBody)
+                html.outputSettings().indentAmount(indentAmount: self.indent).outline(outlineMode: false)
+                response.body = .init(string: try html.outerHtml())
+            } catch Exception.Error(_, let message) {
+                request.logger.warning("Parse HTML response failed: \(message)")
+            } catch {
+                request.logger.warning("Parse HTML response failed")
             }
+
             return response
         }
     }
