@@ -28,13 +28,14 @@ public struct HtmlBeautifyMiddleware: Middleware {
             }
             if self.mediaTypes.map(contentType.hasPrefix).contains(true) {
                 do {
+                    request.logger.info("Try to beautify HTML reponse")
                     let html = try SwiftSoup.parse(responseBody)
                     html.outputSettings().indentAmount(indentAmount: self.indent).outline(outlineMode: false)
                     response.body = .init(string: try html.outerHtml())
                 } catch Exception.Error(_, let message) {
-                    request.logger.error("Parse HTML response failed: \(message)")
+                    request.logger.warning("Parse HTML response failed: \(message)")
                 } catch {
-                    request.logger.error("Parse HTML response failed")
+                    request.logger.warning("Parse HTML response failed")
                 }
             }
             return response
