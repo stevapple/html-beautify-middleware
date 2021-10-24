@@ -7,7 +7,7 @@ public struct HtmlBeautifyMiddleware: Middleware {
     public let indent: UInt
 
     /// Media types to be beautified.
-    public let mediaTypes: [MediaType]
+    public let mediaTypes: [String]
 
     /// Create an `HtmlBeautifyMiddleware`.
     ///
@@ -16,7 +16,7 @@ public struct HtmlBeautifyMiddleware: Middleware {
     ///   - types: An array of media types to be beautified.  Defaults to `[.html]`.
     public init(indent: UInt = 2, accept types: [MediaType] = [.html]) {
         self.indent = indent
-        self.mediaTypes = types
+        self.mediaTypes = types.map(\.rawValue)
     }
 
     public func respond(to request: Request, chainingTo next: Responder) -> EventLoopFuture<Response> {
@@ -26,7 +26,7 @@ public struct HtmlBeautifyMiddleware: Middleware {
             else {
                 return response
             }
-            if self.mediaTypes.map(\.rawValue).map(contentType.hasPrefix).contains(true) {
+            if self.mediaTypes.map(contentType.hasPrefix).contains(true) {
                 do {
                     let html = try SwiftSoup.parse(responseBody)
                     html.outputSettings().indentAmount(indentAmount: self.indent).outline(outlineMode: false)
