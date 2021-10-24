@@ -1,19 +1,19 @@
 import SwiftSoup
 import Vapor
 
-/// A ``Middleware`` to beautify the served HTML with `SwiftSoup`.
+/// A `Middleware` to beautify the served HTML with `SwiftSoup`.
 public struct HtmlBeautifyMiddleware: Middleware {
     /// The length of indents in space.
     public let indent: UInt
 
-    /// The ``MediaType``s to be beautified.
+    /// Media types to be beautified.
     public let mediaTypes: [MediaType]
 
-    /// Create a `HtmlBeautifyMiddleware`.
+    /// Create an `HtmlBeautifyMiddleware`.
     ///
     /// - Parameters:
     ///   - indent: The length of the indent in space.  Defaults to `2`.
-    ///   - types: An array of ``MediaType``s to be beautified.  Defaults to `[.html]`.
+    ///   - types: An array of media types to be beautified.  Defaults to `[.html]`.
     public init(indent: UInt = 2, accept types: [MediaType] = [.html]) {
         self.indent = indent
         self.mediaTypes = types
