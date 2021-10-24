@@ -22,7 +22,8 @@ public struct HtmlBeautifyMiddleware: Middleware {
     public func respond(to request: Request, chainingTo next: Responder) -> EventLoopFuture<Response> {
         next.respond(to: request).map { response in
             guard let contentType = response.headers.contentType?.serialize(),
-                  let responseBody = response.body.string
+                  let responseBody = response.body.string?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  responseBody.lowercased().starts(with: "<!doctype html")
             else {
                 return response
             }
@@ -64,8 +65,6 @@ public struct HtmlBeautifyMiddleware: Middleware {
 extension HtmlBeautifyMiddleware.MediaType {
     /// HTML media type.
     public static let html = Self(rawValue: "text/html")
-    /// XML media type.
-    public static let xml = Self(rawValue: "application/xml")
 
     /// Custom application media type.
     public static func application(_ type: String) -> Self {

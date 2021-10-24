@@ -7,7 +7,7 @@ final class HtmlBeautifyMiddlewareTests: XCTestCase {
         var result = ByteBufferAllocator().buffer(capacity: 0)
 
         result.writeString("""
-        <!doctype html>
+        <!DOCTYPE html>
         <html> <head> <title> 1111 </title> <body>
         <h1> 11
         </h1> 12
